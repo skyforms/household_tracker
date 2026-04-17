@@ -1,0 +1,64 @@
+{% extends "expenses/base.html" %}
+{% block content %}
+
+<h2>Utility Summary for {{ month.name }}</h2>
+
+<a href="{% url 'utilities_dashboard' %}" class="btn btn-secondary mb-3">
+    Back to Utilities Dashboard
+</a>
+
+<h4>Total Utilities: ¥{{ total_utilities }}</h4>
+
+<table class="table table-bordered mt-3">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Total Owed</th>
+            <th>Total Paid</th>
+            <th>Still Owes</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for row in summary %}
+        <tr>
+            <td>{{ row.user.username }}</td>
+            <td>¥{{ row.total_owed }}</td>
+            <td>¥{{ row.total_paid }}</td>
+            <td>
+                {% if row.total_unpaid > 0 %}
+                    <span class="text-danger">¥{{ row.total_unpaid }}</span>
+                {% else %}
+                    <span class="text-success">Settled</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3 class="mt-5">Bills This Month</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Bill</th>
+            <th>Amount</th>
+            <th>Billing Period</th>
+            <th>Paid By</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for bill in bills %}
+        <tr>
+            <td>{{ bill.get_bill_type_display }}</td>
+            <td>¥{{ bill.amount }}</td>
+            <td>{{ bill.billing_period|default:"—" }}</td>
+            <td>{{ bill.paid_by.username }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

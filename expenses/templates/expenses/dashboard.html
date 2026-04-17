@@ -1,0 +1,71 @@
+{% extends "expenses/base.html" %}
+{% load humanize %}
+{% block content %}
+
+<h2>Current Month: {{ month.name }}</h2>
+
+<div class="mb-3">
+  <a href="{% url 'add_deposit' %}" class="btn btn-success me-2">Add Deposit</a>
+  <a href="{% url 'add_purchase' %}" class="btn btn-primary">Add Purchase</a>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-4">
+    <div class="card text-bg-light mb-3">
+      <div class="card-header">Total Deposits This Month</div>
+      <div class="card-body">
+        <h3>¥{{ deposits_total|intcomma }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card text-bg-light mb-3">
+      <div class="card-header">Total Used This Month</div>
+      <div class="card-body">
+        <h3>¥{{ purchases_total|intcomma }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card text-bg-light mb-3">
+      <div class="card-header">Balance</div>
+      <div class="card-body">
+        <h3>¥{{ balance|intcomma }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3 class="mt-4">Recent Purchases</h3>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Item</th>
+      <th>Brand</th>
+      <th>Price</th>
+      <th>Who Paid</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in recent_purchases %}
+    <tr>
+      <td>{{ p.date }}</td>
+      <td>{{ p.item }}</td>
+      <td>{{ p.brand }}</td>
+      <td>¥{{ p.price|intcomma }}</td>
+      <td>{{ p.user.username }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<p class="mt-3">
+  <a href="{% url 'month_summary' month.id %}" class="btn btn-outline-primary">
+    View per-person summary for {{ month.name }}
+  </a>
+</p>
+
+{% endblock %}

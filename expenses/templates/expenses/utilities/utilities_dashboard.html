@@ -1,0 +1,74 @@
+{% extends "expenses/base.html" %}
+{% block content %}
+
+<h2>Utilities for {{ month.name }}</h2>
+
+<a href="{% url 'add_utility_bill' %}" class="btn btn-primary mb-3">
+    Add Utility Bill
+</a>
+
+<a href="{% url 'utilities_monthly_summary' month.id %}" class="btn btn-info mb-3">
+    View Monthly Summary
+</a>
+
+{% if bills %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Bill</th>
+                <th>Total</th>
+                <th>Billing Period</th>
+                <th>Paid By</th>
+                <th>Shares</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for bill in bills %}
+            <tr>
+                <td>{{ bill.get_bill_type_display }}</td>
+                <td>¥{{ bill.amount }}</td>
+                <td>{{ bill.billing_period|default:"—" }}</td>
+                <td>{{ bill.paid_by.username }}</td>
+
+                <td>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Owes</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for share in bill.shares.all %}
+                            <tr>
+                                <td>{{ share.user.username }}</td>
+                                <td>¥{{ share.amount_owed }}</td>
+                                <td>
+                                    {% if share.has_paid %}
+    <a href="{% url 'toggle_utility_payment' share.id %}" class="btn btn-sm btn-success">
+        Paid
+    </a>
+{% else %}
+    <a href="{% url 'toggle_utility_payment' share.id %}" class="btn btn-sm btn-danger">
+        Not Paid
+    </a>
+{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% else %}
+    <p>No utility bills added for this month yet.</p>
+{% endif %}
+
+{% endblock %}
