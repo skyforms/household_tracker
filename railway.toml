@@ -2,4 +2,4 @@
 builder = "NIXPACKS"
 
 [start]
-cmd = "./venv/bin/gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+cmd = "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
