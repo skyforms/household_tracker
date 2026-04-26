@@ -20,6 +20,7 @@
                 <th>Billing Period</th>
                 <th>Paid By</th>
                 <th>Shares</th>
+                <th>Actions</th>
             </tr>
         </thead>
 
@@ -62,10 +63,57 @@
                         </tbody>
                     </table>
                 </td>
+                <td>
+                    <a href="{% url 'edit_utility_bill' bill.id %}" class="btn btn-warning btn-sm mb-1">Edit</a>
+                    <br>
+                    <a href="{% url 'delete_utility_bill' bill.id %}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <hr>
+
+<h4>Totals for {{ month.name }}</h4>
+
+<table class="table table-bordered w-50">
+    <tr>
+        <th>Total Utilities</th>
+        <td>¥{{ total_utilities }}</td>
+    </tr>
+    <tr>
+        <th>Total Paid</th>
+        <td>¥{{ total_paid }}</td>
+    </tr>
+    <tr>
+        <th>Total Unpaid</th>
+        <td>¥{{ total_unpaid }}</td>
+    </tr>
+</table>
+
+<h4>Per-Person Totals</h4>
+
+<table class="table table-bordered w-75">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Total Owed</th>
+            <th>Total Paid</th>
+            <th>Total Unpaid</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in per_person %}
+        <tr>
+            <td>{{ row.user.username }}</td>
+            <td>¥{{ row.owed }}</td>
+            <td>¥{{ row.paid }}</td>
+            <td>¥{{ row.unpaid }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 {% else %}
     <p>No utility bills added for this month yet.</p>

@@ -1,5 +1,0 @@
-[build]
-builder = "NIXPACKS"
-
-[start]
-cmd = "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"

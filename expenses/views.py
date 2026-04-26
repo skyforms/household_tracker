@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Sum
+from django.shortcuts import get_object_or_404, redirect
+
 from .models import Deposit, Purchase, Month, UtilityBill, UtilityShare
 from .utils import get_or_create_current_month
 from .forms import UtilityBillForm
@@ -112,19 +114,43 @@ def add_utility_bill(request):
     return render(request, "expenses/utilities/add_utility_bill.html", {"form": form})
 
 def utilities_dashboard(request):
-    """
-    Shows all utility bills for the current month.
-    Displays each person's share and allows toggling paid/unpaid.
-    """
-
     month = get_or_create_current_month()
 
-    # Get all bills for this month
+    # All bills for this month
     bills = UtilityBill.objects.filter(month=month).order_by("-created_at")
+
+    # All shares for this month
+    shares = UtilityShare.objects.filter(bill__month=month)
+
+    # --- Monthly totals ---
+    total_utilities = sum(b.amount for b in bills)
+    total_paid = sum(s.amount_owed for s in shares if s.has_paid)
+    total_unpaid = total_utilities - total_paid
+
+    # --- Per-person totals ---
+    users = User.objects.filter(userprofile__is_household_member=True)
+
+    per_person = []
+    for user in users:
+        user_shares = shares.filter(user=user)
+        owed = sum(s.amount_owed for s in user_shares)
+        paid = sum(s.amount_owed for s in user_shares if s.has_paid)
+        unpaid = owed - paid
+
+        per_person.append({
+            "user": user,
+            "owed": owed,
+            "paid": paid,
+            "unpaid": unpaid,
+        })
 
     return render(request, "expenses/utilities/utilities_dashboard.html", {
         "month": month,
         "bills": bills,
+        "total_utilities": total_utilities,
+        "total_paid": total_paid,
+        "total_unpaid": total_unpaid,
+        "per_person": per_person,
     })
 
 def toggle_utility_payment(request, share_id):
@@ -188,4 +214,28 @@ def utilities_monthly_summary(request, month_id):
         "total_utilities": total_utilities,
     })
 
+def delete_utility_bill(request, bill_id):
+    bill = get_object_or_404(UtilityBill, id=bill_id)
 
+    if request.method == "POST":
+        bill.delete()
+        return redirect('utilities_dashboard')
+
+    return render(request, 'expenses/delete_utility_bill.html', {'bill': bill})
+
+def edit_utility_bill(request, bill_id):
+    bill = get_object_or_404(UtilityBill, id=bill_id)
+
+    if request.method == "POST":
+        form = UtilityBillForm(request.POST, instance=bill)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Utility bill updated successfully!")
+            return redirect("utilities_dashboard")
+    else:
+        form = UtilityBillForm(instance=bill)
+
+    return render(request, "expenses/utilities/edit_utility_bill.html", {
+        "form": form,
+        "bill": bill,
+    })
